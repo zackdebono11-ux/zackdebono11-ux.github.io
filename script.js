@@ -1787,7 +1787,7 @@ if (addUpgradeButton) {
             input.type = "file";
 
             // Supported JungleScript upgrade files
-            input.accept = ".exe,.jdksu";
+            input.accept = ".exe,.jdksu,.msi,.bat,.cmd,.sh,.app,.jar,.py,.pl,.rb,.php,.js,.ts,.go,.rs,.c,.cpp,.h,.cs,.swift,.kt,.kts,.lua,.r,.jl,.dart,.vbs,.ps1,.psm1,.psd1,.psd1,.psm1,.ps1xml,.psc1,.psc2,.pssc,.psrc,.psrc.xml,.psd1,.psm1,.ps1xml,.psc1,.psc2,.pssc,.psrc,.psrc.xml,.psd1,.psm1,.ps1xml,.psc1,.psc2,.pssc,.psrc,.psrc.xml";
 
             input.addEventListener(
                 "change",
