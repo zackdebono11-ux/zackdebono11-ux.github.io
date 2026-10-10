@@ -2,6 +2,16 @@ node_modules/
 release/
 dist/
 3d/native-test/target/
+3d/shaders/realistic.before-shadow-sampling.hlsl.bak
+3d/shaders/realistic.before-shadow-sampling.hlsl.bak
+3d/shaders/realistic_ps_test.dxil
+3d/shaders/realistic_vs_test.dxil
+3d/shaders/shadow_vs_test.dxil
+src/main.rs.before-shadow-sampling.bak
+.gitignore
+
+
+
 
 *.log
 .env
