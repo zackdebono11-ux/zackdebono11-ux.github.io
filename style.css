@@ -2102,3 +2102,47 @@ header {
     opacity: 0.5;
     cursor: default;
 }
+
+.aiCodeActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.aiCodeButton {
+    padding: 8px 12px;
+    border: 1px solid #397b50;
+    border-radius: 6px;
+    background: #173d28;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.aiCodeButton:hover {
+    background: #245c39;
+}
+
+.aiCodeButton:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.aiCodePreview {
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid #397b50;
+    border-radius: 8px;
+    background: #101b14;
+}
+
+.aiCodePreviewText {
+    max-height: 320px;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    padding: 10px;
+    border-radius: 5px;
+    background: #080e0a;
+    color: #d6f5dc;
+}

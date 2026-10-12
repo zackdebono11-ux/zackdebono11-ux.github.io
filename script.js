@@ -2440,3 +2440,42 @@ if (terminalOutput) {
     terminalPrint("🌴 JungleScript Online Terminal", "success");
     terminalPrint("Type 'help' to get started.");
 }
+
+ 
+// ==========================================
+// 🌴 JUNGLE HELPER EDITOR BRIDGE
+// ==========================================
+
+window.jungleScriptEditor = {
+    getCurrentFile: function () {
+        return currentFile;
+    },
+
+    getCode: function () {
+        return codeBox ? codeBox.value : "";
+    },
+
+    applyCode: function (newCode) {
+        if (!codeBox || typeof newCode !== "string") {
+            return false;
+        }
+
+        // Replace the editor contents only when requested.
+        codeBox.value = newCode;
+
+        // Save the changes to the currently open file.
+        saveCurrentFile();
+
+        // Refresh the editor display.
+        updateLineNumbers();
+
+        if (typeof updateSyntaxHighlighting === "function") {
+            updateSyntaxHighlighting();
+        }
+
+        codeBox.focus();
+        return true;
+    }
+};
+
+console.log("🌴 Jungle Helper editor connection ready!");

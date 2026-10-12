@@ -2378,6 +2378,32 @@ if (line === "break") {
 
 }
 
+    // ==========================================
+    // 🎮 JUNGLEGAME RUNTIME BRIDGE
+    // ==========================================
+
+    if (typeof JungleGameRuntime !== "undefined") {
+        const gamePreview =
+            document.getElementById("previewOutput") ||
+            document.getElementById("gamePreview") ||
+            document.getElementById("jungleGamePreview");
+
+        if (gamePreview) {
+            if (!this.gameRuntime) {
+                this.gameRuntime =
+                    new JungleGameRuntime(gamePreview);
+            }
+
+            const handled =
+                this.gameRuntime.execute(line);
+
+            if (handled) {
+                return;
+            }
+        }
+    }
+
+
 
 // ==========================================
 // ❌ UNKNOWN COMMAND
