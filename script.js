@@ -871,19 +871,24 @@ if (loadCodeButton) {
 
                             currentFile =
                                 file.name;
+                                if (codeBox) {
+    codeBox.value = code;
+
+    // Notify the editor that the code has changed
+    codeBox.dispatchEvent(
+        new Event("input", { bubbles: true })
+    );
+
+    // Keep the editor ready for immediate interaction
+    codeBox.focus();
+}
+
+updateLineNumbers();
+updateActiveFile();
+                                
 
 
-                            if (codeBox) {
 
-                                codeBox.value =
-                                    code;
-
-                            }
-
-
-                            updateLineNumbers();
-
-                            updateActiveFile();
 
 
                             // Add file to explorer
