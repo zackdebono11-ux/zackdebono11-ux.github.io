@@ -1977,6 +1977,59 @@ if (launchUpgradeMatch) {
             return;
 
         }
+        
+        // ==========================================
+        // 🌟 realistic()
+        // ==========================================
+
+        if (line === "realistic()") {
+
+            if (!this.modules.has("3D")) {
+
+                this.error(
+                    lineNumber,
+                    'Load the 3D module first with use("3D").'
+                );
+
+                return;
+
+            }
+
+            if (!this.game3D) {
+
+                this.error(
+                    lineNumber,
+                    'Start the 3D engine first with 3D().'
+                );
+
+                return;
+
+            }
+
+            if (
+                typeof this.game3D.enableRealisticMode !==
+                "function"
+            ) {
+
+                this.error(
+                    lineNumber,
+                    'Realistic mode is not yet implemented in 3d/3d.js.'
+                );
+
+                return;
+
+            }
+
+            this.game3D.enableRealisticMode();
+
+            console.log(
+                "🌟 JungleScript realistic mode enabled!"
+            );
+
+            return;
+
+        }
+
 
 
         // ==========================================
