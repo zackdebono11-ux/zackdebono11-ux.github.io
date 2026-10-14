@@ -121,6 +121,17 @@ this.audioConnected = false;
             15,
             10
         );
+        // ☀️ Enable sunlight shadows
+sunlight.castShadow = true;
+
+sunlight.shadow.mapSize.set(2048, 2048);
+
+sunlight.shadow.camera.left = -25;
+sunlight.shadow.camera.right = 25;
+sunlight.shadow.camera.top = 25;
+sunlight.shadow.camera.bottom = -25;
+
+sunlight.shadow.bias = -0.0001;
 
         this.scene.add(
             sunlight
@@ -158,6 +169,7 @@ this.audioConnected = false;
                 groundGeometry,
                 groundMaterial
             );
+            ground.receiveShadow = true;
 
         ground.rotation.x =
             -Math.PI / 2;
@@ -190,6 +202,8 @@ this.audioConnected = false;
                 playerGeometry,
                 playerMaterial
             );
+            this.player.castShadow = true;
+this.player.receiveShadow = true;
 
         this.player.position.set(
             0,
@@ -210,6 +224,9 @@ this.audioConnected = false;
             new THREE.WebGLRenderer({
                 antialias: true
             });
+            // 🌑 Enable realistic shadows
+this.renderer.shadowMap.enabled = true;
+this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
         this.renderer.setPixelRatio(
             Math.min(
@@ -580,6 +597,17 @@ console.log(
       window.addEventListener(
     "keydown",
     (event) => {
+        const target = event.target;
+
+if (
+    target instanceof HTMLElement &&
+    (
+        target.matches("textarea, input, [contenteditable='true']") ||
+        target.closest("textarea, input, [contenteditable='true']")
+    )
+) {
+    return;
+}
 
         console.log(
             "⌨️ KEYDOWN:",
@@ -645,14 +673,22 @@ console.log(
         // 🖱️ POINTER LOCK
         // ==========================================
 
-        this.renderer.domElement.addEventListener(
-            "click",
-            () => {
+        
+this.renderer.domElement.addEventListener("click", () => {
+    if (document.pointerLockElement !== this.renderer.domElement) {
+        this.renderer.domElement.requestPointerLock();
+    }
+});
 
-                this.renderer.domElement.requestPointerLock();
-
-            }
-        );
+// Escape pointer lock to restore the cursor.
+document.addEventListener("keydown", (event) => {
+    if (
+        event.key === "Escape" &&
+        document.pointerLockElement === this.renderer.domElement
+    ) {
+        document.exitPointerLock();
+    }
+});
 
 
         // ==========================================
@@ -662,6 +698,19 @@ console.log(
         document.addEventListener(
             "pointerlockchange",
             () => {
+                // Do not capture keyboard input while the user is typing in the editor.
+const activeElement = document.activeElement;
+
+if (
+  activeElement &&
+  (
+    activeElement.tagName === "TEXTAREA" ||
+    activeElement.tagName === "INPUT" ||
+    activeElement.isContentEditable
+  )
+) {
+  return;
+}
 
                 this.mouseLocked =
                     document.pointerLockElement ===
@@ -735,8 +784,8 @@ console.log(
 // 🔫 SHOOTING
 // ==========================================
 
-connectShooting() {
 
+connectShooting() {
     if (this.shootingConnected) {
         return;
     }
@@ -744,31 +793,43 @@ connectShooting() {
     this.shootingConnected = true;
 
     window.addEventListener("keydown", (event) => {
-
-        if (event.code === "Space") {
-
-            event.preventDefault();
-
-            this.shoot();
-
+        if (event.code !== "Space") {
+            return;
         }
 
+        // Never intercept Space while typing in the editor.
+        const target = event.target;
+
+        if (
+            target instanceof HTMLElement &&
+            target.closest(
+                "textarea, input, [contenteditable='true']"
+            )
+        ) {
+            return;
+        }
+
+        // Only shoot while the 3D preview has pointer lock.
+        if (
+            document.pointerLockElement !==
+            this.renderer?.domElement
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+        this.shoot();
     });
 
-    this.renderer.domElement.addEventListener(
-        "click",
-        () => {
-
-            if (this.mouseLocked) {
-                this.shoot();
-            }
-
+    this.renderer.domElement.addEventListener("click", () => {
+        if (this.mouseLocked) {
+            this.shoot();
         }
-    );
+    });
 
     console.log("🔫 Shooting system connected!");
-
 }
+
 // ==========================================
 // 🔊 AUDIO SYSTEM
 // ==========================================
@@ -892,12 +953,14 @@ playExplosionSound() {
 
 shoot() {
 
-    if (!this.player || !this.camera) {
-        return;
-    }
-     if (!codeTextarea || !/aiCreateGame\(Shooter\s*\(/.test(codeTextarea.value)) {
-        return;
-    }
+   const codeTextarea = document.getElementById("code");
+
+if (
+    !codeTextarea ||
+    !/aiCreateGameShooter\s*\(/.test(codeTextarea.value)
+) {
+    return;
+}
 
     const now = performance.now();
 
@@ -1349,6 +1412,94 @@ updateLasers() {
             "400px";
 
     }
+    
+    // ==========================================
+    // 🌟 REALISTIC MODE
+    // ==========================================
+
+    enableRealisticMode() {
+
+        if (!this.scene || !this.renderer) {
+            console.warn(
+                "🌟 Start the 3D engine before enabling realistic mode."
+            );
+            return;
+        }
+
+        // 🌑 Enable improved shadows
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type =
+            THREE.PCFSoftShadowMap;
+
+        // 🎨 Improve color and lighting calculations
+        this.renderer.outputColorSpace =
+            THREE.SRGBColorSpace;
+
+        this.renderer.toneMapping =
+            THREE.ACESFilmicToneMapping;
+
+        this.renderer.toneMappingExposure = 1.0;
+
+        // 💡 Improve existing lights
+        this.scene.traverse((object) => {
+
+            if (object.isDirectionalLight) {
+
+                object.intensity = 3;
+
+                object.castShadow = true;
+
+                object.shadow.mapSize.set(
+                    2048,
+                    2048
+                );
+
+                object.shadow.bias = -0.0001;
+
+            }
+
+            if (object.isMesh) {
+
+                // Make meshes cast and receive shadows
+                object.castShadow = true;
+                object.receiveShadow = true;
+
+                // Improve supported material settings
+                const materials = Array.isArray(
+                    object.material
+                )
+                    ? object.material
+                    : [object.material];
+
+                materials.forEach((material) => {
+
+                    if (
+                        material &&
+                        material.isMeshStandardMaterial
+                    ) {
+
+                        material.roughness =
+                            Math.max(
+                                0.25,
+                                material.roughness
+                            );
+
+                        material.needsUpdate = true;
+
+                    }
+
+                });
+
+            }
+
+        });
+
+        console.log(
+            "🌟 Realistic mode enabled: lighting, shadows and materials!"
+        );
+
+    }
+
 
 
     // ==========================================
