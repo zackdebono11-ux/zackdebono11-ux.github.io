@@ -17,6 +17,137 @@ const JUNGLE_HELPER_PROJECT = path.join(
     "JungleHelper"
 );
 
+/* ==========================================
+   🌴 JUNGLESCRIPT PERSISTENT POWERSHELL
+   ========================================== */
+
+let junglePowerShell = null;
+let powerShellStarting = null;
+
+function startJunglePowerShell() {
+    if (junglePowerShell && !junglePowerShell.killed) {
+        return Promise.resolve({ success: true });
+    }
+
+    if (powerShellStarting) {
+        return powerShellStarting;
+    }
+
+    powerShellStarting = new Promise((resolve) => {
+        let settled = false;
+
+        const shell = spawn(
+            "powershell.exe",
+            ["-NoLogo", "-NoProfile", "-Command", "-"],
+            {
+                cwd: __dirname,
+                windowsHide: true,
+                shell: false,
+                stdio: ["pipe", "pipe", "pipe"]
+            }
+        );
+
+        junglePowerShell = shell;
+
+        const finish = (result) => {
+            if (settled) return;
+            settled = true;
+            resolve(result);
+        };
+
+        shell.stdout.on("data", (data) => {
+            for (const window of BrowserWindow.getAllWindows()) {
+                window.webContents.send(
+                    "jungle-terminal-output",
+                    data.toString()
+                );
+            }
+        });
+
+        shell.stderr.on("data", (data) => {
+            for (const window of BrowserWindow.getAllWindows()) {
+                window.webContents.send(
+                    "jungle-terminal-output",
+                    data.toString()
+                );
+            }
+        });
+
+        shell.once("spawn", () => {
+            finish({ success: true });
+        });
+
+        shell.once("error", (error) => {
+            if (junglePowerShell === shell) {
+                junglePowerShell = null;
+            }
+
+            finish({
+                success: false,
+                error: `Could not start PowerShell: ${error.message}`
+            });
+        });
+
+        shell.once("close", () => {
+            if (junglePowerShell === shell) {
+                junglePowerShell = null;
+            }
+
+            for (const window of BrowserWindow.getAllWindows()) {
+                window.webContents.send(
+                    "jungle-terminal-status",
+                    "stopped"
+                );
+            }
+        });
+    }).finally(() => {
+        powerShellStarting = null;
+    });
+
+    return powerShellStarting;
+}
+
+ipcMain.handle("jungle-terminal-start", async () => {
+    return startJunglePowerShell();
+});
+
+ipcMain.handle("jungle-terminal-command", async (event, command) => {
+    if (typeof command !== "string" || !command.trim()) {
+        return { success: false, error: "Enter a command first." };
+    }
+
+    if (command.length > 10000) {
+        return { success: false, error: "Command is too long." };
+    }
+
+    const started = await startJunglePowerShell();
+
+    if (!started.success) {
+        return started;
+    }
+
+    if (!junglePowerShell || junglePowerShell.stdin.destroyed) {
+        return { success: false, error: "PowerShell is not available." };
+    }
+
+    try {
+        junglePowerShell.stdin.write(command + "\n");
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle("jungle-terminal-stop", async () => {
+    if (junglePowerShell) {
+        junglePowerShell.kill();
+        junglePowerShell = null;
+    }
+
+    return { success: true };
+});
+
+
 
 
 // ==========================================
