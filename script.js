@@ -2416,7 +2416,7 @@ async function executeOnlineTerminalCommand(command) {
 
     if (!window.jungleTerminal) {
         terminalPrint(
-            "PowerShell integration is unavailable.",
+            "PowerShell integration is unavailable on online mode.",
             "error"
         );
         return;

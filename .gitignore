@@ -21,4 +21,5 @@ desktop.ini
 JungleScript Setup *.exe
 
 # Salesforce temporary preview data
-**/temp/**
+**/temp/**build/
+.vscode/

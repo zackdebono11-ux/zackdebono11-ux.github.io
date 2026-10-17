@@ -1,0 +1,38 @@
+{
+  "version": "1.0",
+  "sessionId": "281a19e9-3637-4c94-afb1-056fd5c38f9d",
+  "agentId": "Jungle_Helper",
+  "created": "2026-10-05T16:40:28.977Z",
+  "turns": [
+    {
+      "turn": 1,
+      "timestamp": "2026-10-05T16:40:28.977Z",
+      "role": "agent",
+      "summary": "Hi, I'm an AI assistant. How can I help you?",
+      "summaryTruncated": false,
+      "multiModal": null,
+      "traceFile": null,
+      "planId": null
+    },
+    {
+      "turn": 2,
+      "timestamp": "2026-10-05T16:40:47.799Z",
+      "role": "user",
+      "summary": "Hi! Can you explai JungleScript in Japanese?",
+      "summaryTruncated": false,
+      "multiModal": null,
+      "traceFile": null,
+      "planId": null
+    },
+    {
+      "turn": 3,
+      "timestamp": "2026-10-05T16:40:59.963Z",
+      "role": "agent",
+      "summary": "JungleScript（ジャングルスクリプト）は、ウェブサイト、ゲーム、コンピューター自動化のためのプログラミング言語です。JungleScriptは、シンプルな構文と強力なコマンドセットを持ち、....",
+      "summaryTruncated": true,
+      "multiModal": null,
+      "traceFile": "traces/3b5536d7-0610-4882-9d26-915b6aba0c83.json",
+      "planId": "3b5536d7-0610-4882-9d26-915b6aba0c83"
+    }
+  ]
+}
