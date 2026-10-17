@@ -66,11 +66,11 @@ contextBridge.exposeInMainWorld("jungleTerminal", {
         ipcRenderer.on("jungle-terminal-output", listener);
 
         return () => {
-            ipcRenderer.removeListener(
-                "jungle-terminal-output",
-                listener
-            );
-        };
+    ipcRenderer.removeListener(
+        "jungle-terminal-output",
+        listener
+    );
+};
     },
 
     onStatus: (callback) => {

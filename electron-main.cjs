@@ -37,15 +37,21 @@ function startJunglePowerShell() {
         let settled = false;
 
         const shell = spawn(
-            "powershell.exe",
-            ["-NoLogo", "-NoProfile", "-Command", "-"],
-            {
-                cwd: __dirname,
-                windowsHide: true,
-                shell: false,
-                stdio: ["pipe", "pipe", "pipe"]
-            }
-        );
+    "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    ["-NoLogo", "-NoProfile", "-Command", "-"],
+    {
+        cwd: app.getPath("documents"),
+        windowsHide: true,
+        shell: false,
+        stdio: ["pipe", "pipe", "pipe"]
+    }
+);
+shell.stdin.write(
+    "[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false); " +
+    "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); " +
+    "$OutputEncoding = [System.Text.UTF8Encoding]::new($false)\n"
+);
+
 
         junglePowerShell = shell;
 
@@ -54,24 +60,31 @@ function startJunglePowerShell() {
             settled = true;
             resolve(result);
         };
+        const { StringDecoder } = require("node:string_decoder");
+        const stdoutDecoder = new StringDecoder("utf8");
+        const stderrDecoder = new StringDecoder("utf8");
 
         shell.stdout.on("data", (data) => {
-            for (const window of BrowserWindow.getAllWindows()) {
-                window.webContents.send(
-                    "jungle-terminal-output",
-                    data.toString()
-                );
-            }
-        });
+    const text = stdoutDecoder.write(data);
 
-        shell.stderr.on("data", (data) => {
-            for (const window of BrowserWindow.getAllWindows()) {
-                window.webContents.send(
-                    "jungle-terminal-output",
-                    data.toString()
-                );
-            }
-        });
+    if (!text) return;
+
+    for (const window of BrowserWindow.getAllWindows()) {
+        window.webContents.send("jungle-terminal-output", text);
+    }
+});
+        
+
+        
+shell.stderr.on("data", (data) => {
+    const text = stderrDecoder.write(data);
+    if (!text) return;
+
+    for (const window of BrowserWindow.getAllWindows()) {
+        window.webContents.send("jungle-terminal-output", text);
+    }
+});
+
 
         shell.once("spawn", () => {
             finish({ success: true });
@@ -204,7 +217,7 @@ function createWindow() {
     } else {
 
         window.loadURL(
-            "http://localhost:5173/"
+            "http://localhost:5174/"
         );
 
     }
@@ -588,15 +601,21 @@ function runSalesforce(args) {
             commandLine
         );
 
-        const child = spawn(
-            commandLine,
-            {
-                cwd: JUNGLE_HELPER_PROJECT,
-                windowsHide: true,
-                shell: true,
-                stdio: ["ignore", "pipe", "pipe"]
-            }
-        );
+        
+const SF_NODE_EXE = "C:\\Program Files\\nodejs\\node.exe";
+const SF_RUN_JS = "C:\\Program Files\\sf\\client\\bin\\run.js";
+
+const child = spawn(
+    SF_NODE_EXE,
+    [SF_RUN_JS, ...args.map(String)],
+    {
+        cwd: JUNGLE_HELPER_PROJECT,
+        windowsHide: true,
+        shell: false,
+        stdio: ["ignore", "pipe", "pipe"]
+    }
+);
+
 
         let stdout = "";
         let stderr = "";

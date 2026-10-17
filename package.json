@@ -1,9 +1,16 @@
 {
   "name": "@zackdebono11-ux/junglescript",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "repository": "https://github.com/zackdebono11-ux/zackdebono11-ux.github.io",
-"publishConfig": { "registry": "https://npm.pkg.github.com" },
-"files": ["runtime/", "script.js", "style.css", "electron-main.cjs, "],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "files": [
+    "runtime/",
+    "script.js",
+    "style.css",
+    "electron-main.cjs, "
+  ],
   "description": "JungleScript desktop editor",
   "main": "electron-main.cjs",
   "scripts": {
@@ -20,6 +27,7 @@
   "devDependencies": {
     "electron": "^44.2.0",
     "electron-builder": "^26.15.3",
+    "png-to-ico": "^3.0.2",
     "vite": "^8.2.2"
   },
   "build": {
@@ -33,16 +41,22 @@
       "!node_modules/**/*",
       "!release/**/*"
     ],
-    "win": {
-      "target": "nsis",
-      "signAndEditExecutable": false
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
-    }
+   
+"win": {
+  "target": "nsis",
+  "signAndEditExecutable": true,
+  "icon": "build/icon.ico"
+}
+,
+"nsis": {
+  "oneClick": false,
+  "allowToChangeInstallationDirectory": true,
+  "createDesktopShortcut": true,
+  "createStartMenuShortcut": true,
+  "installerIcon": "build/icon.ico",
+  "uninstallerIcon": "build/icon.ico",
+  "installerHeaderIcon": "build/icon.ico"
+}
   },
   "allowScripts": {
     "electron-winstaller@5.4.0": true

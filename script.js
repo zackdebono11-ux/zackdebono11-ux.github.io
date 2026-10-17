@@ -2083,31 +2083,95 @@ testClojureBridge();
 let currentTerminalType = "jungle";
 let terminalDirectory = "C:\\JungleScript";
 
+
+
 function terminalPrint(text, type = "result") {
     if (!terminalOutput) return;
 
     const line = document.createElement("div");
     line.className = `terminal-line terminal-${type}`;
-    line.textContent = text;
+
+    const colors = {
+        30: "#222222",
+        31: "#ff5555",
+        32: "#50fa7b",
+        33: "#f1fa8c",
+        34: "#8be9fd",
+        35: "#ff79c6",
+        36: "#8be9fd",
+        37: "#f8f8f2",
+        90: "#6272a4",
+        91: "#ff5555",
+        92: "#50fa7b",
+        93: "#f1fa8c",
+        94: "#8be9fd",
+        95: "#ff79c6",
+        96: "#8be9fd",
+        97: "#ffffff"
+    };
+
+    let color = null;
+    let bold = false;
+
+    const parts = String(text).split(/\x1b\[([0-9;]*)m/);
+
+    for (let i = 0; i < parts.length; i++) {
+        if (i % 2 === 1) {
+            const codes = parts[i] === ""
+                ? [0]
+                : parts[i].split(";").map(Number);
+
+            for (const code of codes) {
+                if (code === 0) {
+                    color = null;
+                    bold = false;
+                } else if (code === 1) {
+                    bold = true;
+                } else if (code === 22) {
+                    bold = false;
+                } else if (code === 39) {
+                    color = null;
+                } else if (colors[code]) {
+                    color = colors[code];
+                }
+            }
+
+            continue;
+        }
+
+        if (!parts[i]) continue;
+
+        const span = document.createElement("span");
+        span.textContent = parts[i];
+
+        if (color) span.style.color = color;
+        if (bold) span.style.fontWeight = "bold";
+
+        line.appendChild(span);
+    }
 
     terminalOutput.appendChild(line);
 
     const terminal = document.getElementById("onlineTerminal");
-
     if (terminal) {
         terminal.scrollTop = terminal.scrollHeight;
     }
 }
 
-function updateTerminalPrompt() {
-    if (!terminalPrompt) return;
 
-    if (currentTerminalType === "jungle") {
-        terminalPrompt.textContent = "JLS>";
+function updateTerminalPrompt() {
+    const prompt = document.getElementById("terminalPrompt");
+    if (!prompt) return;
+
+    if (currentTerminalType === "powershell") {
+        prompt.textContent = "PS> ";
     } else {
-        terminalPrompt.textContent = `PS ${terminalDirectory}>`;
+        prompt.textContent = "🌴> ";
     }
 }
+
+
+
 
 function printTerminalCommand(command) {
     const prompt =
@@ -2319,21 +2383,100 @@ function runNormalTerminalCommand(command) {
     }
 }
 
-function executeOnlineTerminalCommand(command) {
+
+async function executeOnlineTerminalCommand(command) {
     printTerminalCommand(command);
 
+    if (!command.trim()) {
+        return;
+    }
+
+    // Preserve JungleScript's existing custom terminal.
     if (currentTerminalType === "jungle") {
         runJungleTerminalCommand(command);
-    } else {
-        runNormalTerminalCommand(command);
+        return;
+    }
+
+    const normalized = command.trim().toLowerCase();
+
+    // Clear the visible terminal without stopping PowerShell.
+    if (normalized === "clear" || normalized === "cls") {
+        clearOnlineTerminal();
+        return;
+    }
+
+    // Preserve the app instead of closing it.
+    if (normalized === "exit" || normalized === "quit") {
+        terminalPrint(
+            "PowerShell remains available. Switch modes to continue.",
+            "info"
+        );
+        return;
+    }
+
+    if (!window.jungleTerminal) {
+        terminalPrint(
+            "PowerShell integration is unavailable.",
+            "error"
+        );
+        return;
+    }
+
+    try {
+        // Start or reuse the persistent PowerShell process.
+        const started = await window.jungleTerminal.start();
+
+        if (!started || !started.success) {
+            terminalPrint(
+                started?.error || "Could not start PowerShell.",
+                "error"
+            );
+            return;
+        }
+
+        // Execute the command in the real PowerShell process.
+        const result = await window.jungleTerminal.run(command);
+
+        if (!result || !result.success) {
+            terminalPrint(
+                result?.error || "Could not execute the command.",
+                "error"
+            );
+        }
+    } catch (error) {
+        terminalPrint(
+            `PowerShell error: ${error.message}`,
+            "error"
+        );
     }
 }
+
 
 function clearOnlineTerminal() {
     if (terminalOutput) {
         terminalOutput.innerHTML = "";
     }
 }
+
+/* ==========================================
+   🌴 REAL POWERSHELL CONNECTION
+   ========================================== */
+
+if (window.jungleTerminal) {
+    window.jungleTerminal.onOutput((output) => {
+        terminalPrint(String(output), "result");
+    });
+
+    window.jungleTerminal.onStatus((status) => {
+        if (status === "stopped") {
+            terminalPrint(
+                "PowerShell session stopped.",
+                "info"
+            );
+        }
+    });
+}
+
 
 if (terminalInput) {
     terminalInput.addEventListener("keydown", event => {
@@ -2359,6 +2502,23 @@ if (terminalType) {
                 : "🖥️ Switched to Normal Terminal.",
             "info"
         );
+        if (currentTerminalType === "normal") {
+    if (window.jungleTerminal) {
+        window.jungleTerminal.start().then(result => {
+            if (!result || !result.success) {
+                terminalPrint(
+                    result?.error || "Could not start PowerShell.",
+                    "error"
+                );
+            }
+        }).catch(error => {
+            terminalPrint(
+                `PowerShell error: ${error.message}`,
+                "error"
+            );
+        });
+    }
+}
 
         if (terminalInput) {
             terminalInput.focus();

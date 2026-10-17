@@ -5,7 +5,7 @@ import subprocess
 import winreg
 from pathlib import Path
 
-APP_NAME = "JungleScript 0.2.0"
+APP_NAME = "JungleScript 0.2.1"
 
 def get_base_dir():
     """Directory the installer itself lives in, whether run as a plain
